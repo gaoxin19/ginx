@@ -90,7 +90,19 @@ func newEncoderConfig() zapcore.EncoderConfig {
 }
 
 var (
-	defaultLogger *zap.Logger
+	defaultLogger *zap.Logger = func() *zap.Logger {
+		// 创建默认的命令行日志配置
+		conf := &LogConfig{
+			Level:   "info",
+			Console: true,
+		}
+		logger, err := NewLogger(conf)
+		if err != nil {
+			// 如果出现错误，创建一个基础的开发模式logger
+			logger, _ = zap.NewDevelopment()
+		}
+		return logger
+	}()
 )
 
 // SetLogger 设置全局日志实例
@@ -100,8 +112,5 @@ func SetLogger(logger *zap.Logger) {
 
 // L 获取全局日志实例
 func L() *zap.Logger {
-	if defaultLogger == nil {
-		panic("default logger is not set")
-	}
 	return defaultLogger
 }
